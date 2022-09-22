@@ -25,7 +25,7 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 	fun addDocument(params: KrollDict) {
 		val callback = params["callback"] as KrollFunction
 		val collection = params["collection"] as String
-		val data = params["data"] as KrollDict
+		val data = params.getKrollDict("data")
 
 		Firebase.firestore.collection(collection)
 			.add(data)
@@ -73,7 +73,7 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 	fun updateDocument(params: KrollDict) {
 		val callback = params["callback"] as KrollFunction
 		val collection = params["collection"] as String
-		val data = params["data"] as KrollDict
+		val data = params.getKrollDict("data")
 		val document = params["document"] as String
 
 		Firebase.firestore.collection(collection)
@@ -98,7 +98,6 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 	fun deleteDocument(params: KrollDict) {
 		val callback = params["callback"] as KrollFunction
 		val collection = params["collection"] as String
-		val data = params["data"] as KrollDict
 		val document = params["document"] as String
 
 		Firebase.firestore.collection(collection)
