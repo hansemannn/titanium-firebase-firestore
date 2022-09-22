@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 4
+architectures: arm64-v8a armeabi-v7a x86 x86_64
+description: titanium-firebase-firestore
+author: Your Name
+license: Specify your license
+copyright: Copyright (c) 2022 by Your Company
+
+# these should not be edited
+name: titanium-firebase-firestore
+moduleid: firebase.firestore
+guid: ba10ef49-d276-4dca-b0be-ed5512a43232
+platform: android
+minsdk: 11.1.0.GA

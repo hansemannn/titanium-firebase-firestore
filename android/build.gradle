@@ -1,0 +1,8 @@
+repositories {
+	google()
+	mavenCentral()
+}
+
+dependencies {
+    implementation 'com.google.firebase:firebase-firestore-ktx:24.3.1'
+}
