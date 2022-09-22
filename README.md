@@ -11,11 +11,11 @@ thank you!
 ## Requirements
 
 -   [x] The [Firebase Core](https://github.com/hansemannn/titanium-firebase-core) module
--   [x] Titanium SDK 6.3.0+
+-   [x] Titanium SDK 9.2.0+
 
 ## Example
 
-See the [./example/app.js](example/app.js) for details!
+See the [example/app.js](./example/app.js) for details!
 
 ## Build
 
@@ -23,6 +23,10 @@ See the [./example/app.js](example/app.js) for details!
 cd ios
 ti build -p ios --build-only
 ```
+
+## Author
+
+Hans Knöchel
 
 ## Legal
 
