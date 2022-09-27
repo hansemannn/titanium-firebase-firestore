@@ -26,6 +26,15 @@
 - (void)getDocuments:(id)params;
 
 /**
+ Returns a single doc saved in the provided Firestore collection.
+ 
+ - Parameter callback: The callback to be invoked if either the documents were fetched or an error occurred.
+ - Parameter collection: The name of the collection.
+ - Parameter document: The name of the document.
+ */
+- (void)getSingleDocument:(id)params;
+
+/**
  Updates an extisting document from the provided Firestore collection.
  
  - Parameter callback: The callback to be invoked if either the document was updated or an error occurred.
