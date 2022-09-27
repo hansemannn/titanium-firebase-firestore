@@ -67,6 +67,29 @@
   }];
 }
 
+- (void)getSingleDocument:(id)params
+{
+  ENSURE_SINGLE_ARG(params, NSDictionary);
+
+  KrollCallback *callback = params[@"callback"];
+  NSString *collection = params[@"collection"];
+  NSString *document = params[@"document"];
+  FIRDocumentReference *docRef =
+    [[self.db collectionWithPath:collection] documentWithPath:document];
+
+
+  [docRef getDocumentWithCompletion:^(FIRQuerySnapshot * _Nullable snapshot, NSError * _Nullable error) {
+    if (error != nil) {
+      [callback call:@[@{ @"success": @(NO), @"error": error.localizedDescription }] thisObject:self];
+      return;
+    }
+
+    [callback call:@[@{ @"success": @(YES), @"document": [snapshot data] }] thisObject:self];
+
+  }];
+}
+
+
 - (void)updateDocument:(id)params
 {
   ENSURE_SINGLE_ARG(params, NSDictionary);
