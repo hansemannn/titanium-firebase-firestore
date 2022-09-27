@@ -74,9 +74,10 @@
   KrollCallback *callback = params[@"callback"];
   NSString *collection = params[@"collection"];
   NSString *document = params[@"document"];
-  FIRDocumentReference *docRef = [[self.db collectionWithPath:collection] documentWithPath:document];
 
-  [docRef getDocumentWithCompletion:^(FIRQuerySnapshot * _Nullable snapshot, NSError * _Nullable error) {
+  FIRDocumentReference *documentReference = [[FIRFirestore.firestore collectionWithPath:collection] documentWithPath:document];
+
+  [documentReference getDocumentWithCompletion:^(FIRDocumentSnapshot * _Nullable snapshot, NSError * _Nullable error) {
     if (error != nil) {
       [callback call:@[@{ @"success": @(NO), @"error": error.localizedDescription }] thisObject:self];
       return;
