@@ -31,7 +31,7 @@
 
   KrollCallback *callback = params[@"callback"];
   NSString *collection = params[@"collection"];
-  NSDictionary *data = params[@"data"];
+  NSDictionary *data = params[@"data"]; // TODO: Parse "FIRFieldValue" proxy types
 
   __block FIRDocumentReference *ref = [[FIRFirestore.firestore collectionWithPath:collection] addDocumentWithData:data
                                                                    completion:^(NSError * _Nullable error) {
@@ -73,7 +73,7 @@
 
   KrollCallback *callback = params[@"callback"];
   NSString *collection = params[@"collection"];
-  NSDictionary *data = params[@"data"];
+  NSDictionary *data = params[@"data"]; // TODO: Parse "FIRFieldValue" proxy types
   NSString *document = params[@"document"];
 
   [[[FIRFirestore.firestore collectionWithPath:collection] documentWithPath:document] updateData:data
@@ -104,6 +104,14 @@
 
     [callback call:@[@{ @"success": @(YES) }] thisObject:self];
   }];
+}
+
+- (FirebaseFirestoreFieldValueProxy *)increment:(id)value
+{
+  ENSURE_SINGLE_ARG(value, NSNumber);
+  
+  FIRFieldValue *fieldValue = [FIRFieldValue fieldValueForIntegerIncrement:[TiUtils intValue:value]];
+  return [[FirebaseFirestoreFieldValueProxy alloc] _initWithPageContext:pageContext andFieldValue:fieldValue];
 }
 
 @end

@@ -5,6 +5,7 @@
  */
 
 #import "TiModule.h"
+#import "FirebaseFirestoreFieldValueProxy.h"
 
 @interface FirebaseFirestoreModule : TiModule
 
@@ -43,5 +44,12 @@
  - Parameter document: The document to delete.
  */
 - (void)deleteDocument:(id)params;
+
+/**
+ Returns a special value  that tells the server to increment the field's current value by the given value.
+ 
+ - Parameter value: The value to increment.
+ */
+- (FirebaseFirestoreFieldValueProxy *)increment:(id)value;
 
 @end
