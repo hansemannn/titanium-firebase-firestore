@@ -68,7 +68,7 @@
     NSMutableArray<NSDictionary<NSString *, id> *> *documents = [NSMutableArray arrayWithCapacity:snapshot.documents.count];
 
     [snapshot.documents enumerateObjectsUsingBlock:^(FIRQueryDocumentSnapshot *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-      [documents addObject:[obj data]];
+      [documents addObject:[TiFirestoreUtils mappedFirestoreValue:obj.data]];
     }];
 
     [callback call:@[ @{@"success" : @(YES),

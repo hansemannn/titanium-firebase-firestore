@@ -26,6 +26,8 @@
 		24DD6CFA1134B3F500162E58 /* FirebaseFirestoreModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DD6CF81134B3F500162E58 /* FirebaseFirestoreModule.m */; };
 		24DE9E1111C5FE74003F90F6 /* FirebaseFirestoreModuleAssets.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DE9E0F11C5FE74003F90F6 /* FirebaseFirestoreModuleAssets.h */; };
 		24DE9E1211C5FE74003F90F6 /* FirebaseFirestoreModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* FirebaseFirestoreModuleAssets.m */; };
+		3A14D1F0293FF92C00185D89 /* TiFirestoreUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A14D1EE293FF92C00185D89 /* TiFirestoreUtils.h */; };
+		3A14D1F1293FF92C00185D89 /* TiFirestoreUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A14D1EF293FF92C00185D89 /* TiFirestoreUtils.m */; };
 		3A6ED3F428DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A6ED3F228DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.h */; };
 		3A6ED3F528DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A6ED3F328DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.m */; };
 		3ABF303128DCD5B50044E929 /* FBLPromises.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3ABF301D28DCD5B50044E929 /* FBLPromises.xcframework */; };
@@ -69,6 +71,8 @@
 		24DD6D1B1134B66800162E58 /* titanium.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = titanium.xcconfig; sourceTree = "<group>"; };
 		24DE9E0F11C5FE74003F90F6 /* FirebaseFirestoreModuleAssets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FirebaseFirestoreModuleAssets.h; path = Classes/FirebaseFirestoreModuleAssets.h; sourceTree = "<group>"; };
 		24DE9E1011C5FE74003F90F6 /* FirebaseFirestoreModuleAssets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FirebaseFirestoreModuleAssets.m; path = Classes/FirebaseFirestoreModuleAssets.m; sourceTree = "<group>"; };
+		3A14D1EE293FF92C00185D89 /* TiFirestoreUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TiFirestoreUtils.h; path = Classes/TiFirestoreUtils.h; sourceTree = "<group>"; };
+		3A14D1EF293FF92C00185D89 /* TiFirestoreUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = TiFirestoreUtils.m; path = Classes/TiFirestoreUtils.m; sourceTree = "<group>"; };
 		3A6ED3F228DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FirebaseFirestoreFieldValueProxy.h; path = Classes/FirebaseFirestoreFieldValueProxy.h; sourceTree = "<group>"; };
 		3A6ED3F328DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = FirebaseFirestoreFieldValueProxy.m; path = Classes/FirebaseFirestoreFieldValueProxy.m; sourceTree = "<group>"; };
 		3ABF301D28DCD5B50044E929 /* FBLPromises.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FBLPromises.xcframework; path = _shared/FBLPromises.xcframework; sourceTree = "<group>"; };
@@ -187,6 +191,8 @@
 				24DD6CF81134B3F500162E58 /* FirebaseFirestoreModule.m */,
 				3A6ED3F228DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.h */,
 				3A6ED3F328DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.m */,
+				3A14D1EE293FF92C00185D89 /* TiFirestoreUtils.h */,
+				3A14D1EF293FF92C00185D89 /* TiFirestoreUtils.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -209,6 +215,7 @@
 			files = (
 				AA747D9F0F9514B9006C5449 /* FirebaseFirestore_Prefix.pch in Headers */,
 				24DD6CF91134B3F500162E58 /* FirebaseFirestoreModule.h in Headers */,
+				3A14D1F0293FF92C00185D89 /* TiFirestoreUtils.h in Headers */,
 				24DE9E1111C5FE74003F90F6 /* FirebaseFirestoreModuleAssets.h in Headers */,
 				3A6ED3F428DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.h in Headers */,
 			);
@@ -287,6 +294,7 @@
 			files = (
 				3A6ED3F528DDECAA0036877D /* FirebaseFirestoreFieldValueProxy.m in Sources */,
 				24DD6CFA1134B3F500162E58 /* FirebaseFirestoreModule.m in Sources */,
+				3A14D1F1293FF92C00185D89 /* TiFirestoreUtils.m in Sources */,
 				24DE9E1211C5FE74003F90F6 /* FirebaseFirestoreModuleAssets.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
