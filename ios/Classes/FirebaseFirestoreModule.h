@@ -4,14 +4,14 @@
  * Created by Hans Knöchel
  */
 
-#import "TiModule.h"
 #import "FirebaseFirestoreFieldValueProxy.h"
+#import "TiModule.h"
 
 @interface FirebaseFirestoreModule : TiModule
 
 /**
  Adds a new document to the provided Firestore collection.
- 
+
  - Parameter callback: The callback to be invoked if either the document was added or an error occurred.
  - Parameter collection: The name of the collection.
  - Parameter data: The data to save in the provided collection.
@@ -20,7 +20,7 @@
 
 /**
  Returns a list of documents saved in the provided Firestore collection.
- 
+
  - Parameter callback: The callback to be invoked if either the documents were fetched or an error occurred.
  - Parameter collection: The name of the collection.
  */
@@ -28,7 +28,7 @@
 
 /**
  Returns a single doc saved in the provided Firestore collection.
- 
+
  - Parameter callback: The callback to be invoked if either the documents were fetched or an error occurred.
  - Parameter collection: The name of the collection.
  - Parameter document: The name of the document.
@@ -37,7 +37,7 @@
 
 /**
  Updates an extisting document from the provided Firestore collection.
- 
+
  - Parameter callback: The callback to be invoked if either the document was updated or an error occurred.
  - Parameter collection: The name of the collection.
  - Parameter data: The data to update in the provided collection.
@@ -47,7 +47,7 @@
 
 /**
  Removes a new document from the provided Firestore collection.
- 
+
  - Parameter callback: The callback to be invoked if either the document was removed or an error occurred.
  - Parameter collection: The name of the collection.
  - Parameter document: The document to delete.
@@ -56,7 +56,7 @@
 
 /**
  Returns a special value  that tells the server to increment the field's current value by the given value.
- 
+
  - Parameter value: The value to increment.
  */
 - (FirebaseFirestoreFieldValueProxy *)increment:(id)value;
