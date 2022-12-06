@@ -50,6 +50,72 @@
                                                                                                        }];
 }
 
+- (void)queryDocuments:(id)params
+{
+  ENSURE_SINGLE_ARG(params, NSDictionary);
+  KrollCallback *callback = params[@"callback"];
+  NSString *collection = params[@"collection"];
+  NSString *document = params[@"document"];
+  NSString *field = params[@"field"];
+  NSString *opStr = params[@"opStr"];
+  NSString *value = params[@"value"];
+  NSString *and = params[@"and"];
+  NSString *andValue = params[@"andValue"];
+  NSString *andField = params[@"andField"];
+  NSMutableArray *filters = params[@"filters"];
+
+  FIRQuery *query;
+  FIRCollectionReference *ref = [FIRFirestore.firestore collectionWithPath:collection];
+  FIRDocumentReference *documentReference = [[FIRFirestore.firestore collectionWithPath:collection] documentWithPath:document];
+
+  if ([and isEqualToString:@"and"]) {
+    query = [[ref queryWhereField:field isEqualTo:value]
+        queryWhereField:andField
+              isEqualTo:andValue];
+  } else if ([opStr isEqualToString:@"=="]) {
+    query = [ref queryWhereField:field isEqualTo:value];
+  } else if ([opStr isEqualToString:@">"]) {
+    query = [ref queryWhereField:field isGreaterThan:value];
+  } else if ([opStr isEqualToString:@">="]) {
+    query = [ref queryWhereField:field isGreaterThanOrEqualTo:value];
+  } else if ([opStr isEqualToString:@"<"]) {
+    query = [ref queryWhereField:field isLessThan:value];
+  } else if ([opStr isEqualToString:@"<="]) {
+    query = [ref queryWhereField:field isLessThanOrEqualTo:value];
+  } else if ([opStr isEqualToString:@"in"]) {
+    query = [ref queryWhereField:field in:filters];
+  } else if ([opStr isEqualToString:@"array-contains"]) {
+    query = [ref queryWhereField:field arrayContains:filters];
+  } else if ([opStr isEqualToString:@"array-contains-any"]) {
+    query = [ref queryWhereField:field arrayContainsAny:filters];
+  } else {
+    NSLog(@"[ERROR] Unknown operator type \"%@\"", opStr);
+  }
+
+  [[FIRFirestore.firestore collectionWithPath:collection] getDocumentsWithCompletion:^(FIRQuerySnapshot *_Nullable snapshot, NSError *_Nullable error) {
+    if (error != nil) {
+      [callback call:@[ @{
+        @"success" : @(NO),
+        @"error" : error.localizedDescription
+      } ]
+          thisObject:self];
+      return;
+    }
+
+    NSMutableArray<NSDictionary<NSString *, id> *> *documents = [NSMutableArray arrayWithCapacity:snapshot.documents.count];
+
+    // Map the documents to make sure it's a bridgeable type
+    [snapshot.documents enumerateObjectsUsingBlock:^(FIRQueryDocumentSnapshot *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+      [documents addObject:[TiFirestoreUtils mappedFirestoreValue:obj.data]];
+    }];
+    [callback call:@[ @{
+      @"success" : @(YES),
+      @"documents" : documents
+    } ]
+        thisObject:self];
+  }];
+}
+
 - (void)getDocuments:(id)params
 {
   ENSURE_SINGLE_ARG(params, NSDictionary);

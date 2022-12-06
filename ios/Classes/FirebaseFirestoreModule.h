@@ -19,6 +19,12 @@
 - (void)addDocument:(id)params;
 
 /**
+ Returns a list of documents saved in the provided Firestore collection. Different to `getDocuments`, you can also pass
+ filteres here.
+ */
+- (void)queryDocuments:(id)params;
+
+/**
  Returns a list of documents saved in the provided Firestore collection.
 
  - Parameter callback: The callback to be invoked if either the documents were fetched or an error occurred.
