@@ -92,7 +92,7 @@
     NSLog(@"[ERROR] Unknown operator type \"%@\"", opStr);
   }
 
-  [[FIRFirestore.firestore collectionWithPath:collection] getDocumentsWithCompletion:^(FIRQuerySnapshot *_Nullable snapshot, NSError *_Nullable error) {
+  [query getDocumentsWithCompletion:^(FIRQuerySnapshot *_Nullable snapshot, NSError *_Nullable error) {
     if (error != nil) {
       [callback call:@[ @{
         @"success" : @(NO),
