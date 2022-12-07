@@ -6,9 +6,9 @@
 
 #import "FirebaseFirestoreModule.h"
 #import "TiBase.h"
+#import "TiFirestoreUtils.h"
 #import "TiHost.h"
 #import "TiUtils.h"
-#import "TiFirestoreUtils.h"
 
 #import <FirebaseFirestore/FirebaseFirestore.h>
 
@@ -56,40 +56,75 @@
   KrollCallback *callback = params[@"callback"];
   NSString *collection = params[@"collection"];
   NSString *document = params[@"document"];
-  NSString *field = params[@"field"];
-  NSString *opStr = params[@"opStr"];
-  NSString *value = params[@"value"];
-  NSString *and = params[@"and"];
-  NSString *andValue = params[@"andValue"];
-  NSString *andField = params[@"andField"];
-  NSMutableArray *filters = params[@"filters"];
 
-  FIRQuery *query;
   FIRCollectionReference *ref = [FIRFirestore.firestore collectionWithPath:collection];
   FIRDocumentReference *documentReference = [[FIRFirestore.firestore collectionWithPath:collection] documentWithPath:document];
+  FIRQuery *query = [FIRFirestore.firestore collectionWithPath:params[@"path"]];
 
-  if ([and isEqualToString:@"and"]) {
-    query = [[ref queryWhereField:field isEqualTo:value]
-        queryWhereField:andField
-              isEqualTo:andValue];
-  } else if ([opStr isEqualToString:@"=="]) {
-    query = [ref queryWhereField:field isEqualTo:value];
-  } else if ([opStr isEqualToString:@">"]) {
-    query = [ref queryWhereField:field isGreaterThan:value];
-  } else if ([opStr isEqualToString:@">="]) {
-    query = [ref queryWhereField:field isGreaterThanOrEqualTo:value];
-  } else if ([opStr isEqualToString:@"<"]) {
-    query = [ref queryWhereField:field isLessThan:value];
-  } else if ([opStr isEqualToString:@"<="]) {
-    query = [ref queryWhereField:field isLessThanOrEqualTo:value];
-  } else if ([opStr isEqualToString:@"in"]) {
-    query = [ref queryWhereField:field in:filters];
-  } else if ([opStr isEqualToString:@"array-contains"]) {
-    query = [ref queryWhereField:field arrayContains:filters];
-  } else if ([opStr isEqualToString:@"array-contains-any"]) {
-    query = [ref queryWhereField:field arrayContainsAny:filters];
-  } else {
-    NSLog(@"[ERROR] Unknown operator type \"%@\"", opStr);
+  NSDictionary *parameters = params[@"parameters"];
+  NSArray *whereConditions = params[@"where"];
+
+  for (id item in whereConditions) {
+    NSArray *condition = item;
+    NSString *fieldName = condition[0];
+    NSString *op = condition[1];
+    id value = condition[2];
+    if ([op isEqualToString:@"=="]) {
+      query = [query queryWhereField:fieldName isEqualTo:value];
+    } else if ([op isEqualToString:@"<"]) {
+      query = [query queryWhereField:fieldName isLessThan:value];
+    } else if ([op isEqualToString:@"<="]) {
+      query = [query queryWhereField:fieldName isLessThanOrEqualTo:value];
+    } else if ([op isEqualToString:@">"]) {
+      query = [query queryWhereField:fieldName isGreaterThan:value];
+    } else if ([op isEqualToString:@">="]) {
+      query = [query queryWhereField:fieldName isGreaterThanOrEqualTo:value];
+    } else if ([op isEqualToString:@"array-contains"]) {
+      query = [query queryWhereField:fieldName arrayContains:value];
+    } else {
+      NSLog(@"[ERROR] Unhandled operator \"%@\" on field \"%@\"", op, fieldName);
+      // Unsupported operator
+    }
+  }
+
+  id limit = parameters[@"limit"];
+  if (limit) {
+    NSNumber *length = limit;
+    query = [query queryLimitedTo:[length intValue]];
+  }
+
+  NSArray *orderBy = parameters[@"orderBy"];
+  if (orderBy) {
+    for (id item in orderBy) {
+      NSArray *orderByParameters = item;
+      NSString *fieldName = orderByParameters[0];
+      NSNumber *descending = orderByParameters[1];
+      query = [query queryOrderedByField:fieldName descending:[descending boolValue]];
+    }
+  }
+
+  id startAt = parameters[@"startAt"];
+  if (startAt) {
+    NSArray *startAtValues = startAt;
+    query = [query queryStartingAtValues:startAtValues];
+  }
+
+  id startAfter = parameters[@"startAfter"];
+  if (startAfter) {
+    NSArray *startAfterValues = startAfter;
+    query = [query queryStartingAfterValues:startAfterValues];
+  }
+
+  id endAt = parameters[@"endAt"];
+  if (endAt) {
+    NSArray *endAtValues = endAt;
+    query = [query queryEndingAtValues:endAtValues];
+  }
+
+  id endBefore = parameters[@"endBefore"];
+  if (endBefore) {
+    NSArray *endBeforeValues = endBefore;
+    query = [query queryEndingBeforeValues:endBeforeValues];
   }
 
   [query getDocumentsWithCompletion:^(FIRQuerySnapshot *_Nullable snapshot, NSError *_Nullable error) {
