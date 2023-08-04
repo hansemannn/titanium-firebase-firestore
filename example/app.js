@@ -42,6 +42,8 @@ function performCRUD() {
 
                     console.warn('Updated in Firestore successfully!');
 
+                    // NOTE: You can also use "queryDocuments" to apply filters. See the source for details!
+
                     TiFirestore.getDocuments({
                         collection: 'users',
                         callback: event => {

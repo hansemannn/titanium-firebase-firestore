@@ -14,7 +14,7 @@
   if (self = [super _initWithPageContext:pageContext]) {
     _fieldValue = fieldValue;
   }
-  
+
   return self;
 }
 
