@@ -11,10 +11,11 @@ package firebase.firestore
 
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
+import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
+
 
 @Kroll.module(name = "TitaniumFirebaseFirestore", id = "firebase.firestore")
 class TitaniumFirebaseFirestoreModule: KrollModule() {
@@ -53,10 +54,17 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		Firebase.firestore.collection(collection)
 			.get()
 			.addOnSuccessListener { it ->
-				val documents: List<Map<String, Any>?> = it.documents.map { snapshot -> snapshot.data }
+
+				val list = mutableListOf<Map<String, Any>>()
+				for (document in it.documents) {
+					val map = mutableMapOf<String, Any>()
+					map["id"] = document.id
+					map["data"] = KrollDict(document.data)
+					list.add(map)
+				}
 				val event = KrollDict()
 				event["success"] = true
-				event["documents"] = documents.toTypedArray()
+				event["documents"] = list.toTypedArray()
 
 				callback.callAsync(getKrollObject(), event)
 			}
