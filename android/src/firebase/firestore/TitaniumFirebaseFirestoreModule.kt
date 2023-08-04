@@ -57,11 +57,11 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 
 				val list = mutableListOf<Map<String, Any>>()
 				for (document in it.documents) {
-					val map = mutableMapOf<String, Any>()
-					map["id"] = document.id
-					map["data"] = KrollDict(document.data)
-					list.add(map)
+					val d = KrollDict(document.data)
+					d["_id"] = document.id
+					list.add(d)
 				}
+
 				val event = KrollDict()
 				event["success"] = true
 				event["documents"] = list.toTypedArray()
