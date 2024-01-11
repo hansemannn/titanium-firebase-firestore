@@ -9,12 +9,14 @@
 
 package firebase.firestore
 
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
 import org.appcelerator.kroll.annotations.Kroll
+import org.appcelerator.kroll.common.Log
 
 @Kroll.module(name = "TitaniumFirebaseFirestore", id = "firebase.firestore")
 class TitaniumFirebaseFirestoreModule: KrollModule() {
@@ -25,24 +27,47 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 	fun addDocument(params: KrollDict) {
 		val callback = params["callback"] as KrollFunction
 		val collection = params["collection"] as String
+		var document = ""
+		if (params.containsKeyAndNotNull("document")) {
+			document = params["document"] as String
+		}
 		val data = params.getKrollDict("data")
+		if (document.isEmpty()) {
+			Firebase.firestore.collection(collection)
+					.add(data)
+					.addOnSuccessListener {
+						val event = KrollDict()
+						event["success"] = true
+						event["documentID"] = it.id
 
-		Firebase.firestore.collection(collection)
-			.add(data)
-			.addOnSuccessListener {
-				val event = KrollDict()
-				event["success"] = true
-				event["documentID"] = it.id
+						callback.callAsync(getKrollObject(), event)
+					}
+					.addOnFailureListener { error ->
+						val event = KrollDict()
+						event["success"] = false
+						event["error"] = error.localizedMessage
 
-				callback.callAsync(getKrollObject(), event)
-			}
-			.addOnFailureListener { error ->
-				val event = KrollDict()
-				event["success"] = false
-				event["error"] = error.localizedMessage
+						callback.callAsync(getKrollObject(), event)
+					}
+		} else {
+			Firebase.firestore.collection(collection)
+					.document(document)
+					.set(data)
+					.addOnSuccessListener{
+						val event = KrollDict()
+						event["success"] = true
+						event["documentID"] = document
 
-				callback.callAsync(getKrollObject(), event)
-			}
+						callback.callAsync(getKrollObject(), event)
+					}
+					.addOnFailureListener { error ->
+						val event = KrollDict()
+						event["success"] = false
+						event["error"] = error.localizedMessage
+
+						callback.callAsync(getKrollObject(), event)
+					}
+		}
 	}
 
 	@Kroll.method
