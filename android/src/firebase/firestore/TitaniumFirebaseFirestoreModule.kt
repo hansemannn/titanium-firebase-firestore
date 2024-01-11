@@ -9,14 +9,12 @@
 
 package firebase.firestore
 
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
-import org.appcelerator.kroll.common.Log
 
 
 @Kroll.module(name = "TitaniumFirebaseFirestore", id = "firebase.firestore")
@@ -34,6 +32,7 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		}
 		val data = params.getKrollDict("data")
 		if (document.isEmpty()) {
+			// auto-id document
 			Firebase.firestore.collection(collection)
 					.add(data)
 					.addOnSuccessListener {
@@ -51,6 +50,7 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 						callback.callAsync(getKrollObject(), event)
 					}
 		} else {
+			// fixed document
 			Firebase.firestore.collection(collection)
 					.document(document)
 					.set(data)
