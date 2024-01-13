@@ -2,6 +2,15 @@
 
 Use the native Firebase SDK in Titanium. This repository is part of the [Titanium Firebase](https://github.com/hansemannn/titanium-firebase) project.
 
+## Methods:
+
+* addDocument({callback[function], collection[string], data[object]})
+* addDocument({callback[function], collection[string], document[string], data[object]}) <i>Android only</i>
+* getDocuments({callback[function], collection[string])
+* getDocument({callback[function], collection[string], document[string]) <i>Andorid only</i>
+* updateDocument({callback[function], collection[string], document[string], data[object]})
+* deleteDocument({callback[function], collection[string], document[string]})
+
 ## Supporting this effort
 
 The whole Firebase support in Titanium is developed and maintained by the community (`@hansemannn` and `@m1ga`). To keep

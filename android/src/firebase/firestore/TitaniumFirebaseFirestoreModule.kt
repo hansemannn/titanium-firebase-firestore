@@ -101,6 +101,33 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 				callback.callAsync(getKrollObject(), event)
 			}
 	}
+	@Kroll.method
+	fun getDocument(params: KrollDict) {
+		val callback = params["callback"] as KrollFunction
+		val collection = params["collection"] as String
+		val document = params["document"] as String
+
+		val docRef = Firebase.firestore.collection(collection).document(document)
+		docRef.get()
+			.addOnSuccessListener { it ->
+
+				val d = KrollDict(it.data)
+				d["_id"] = it.id
+
+				val event = KrollDict()
+				event["success"] = true
+				event["document"] = d
+
+				callback.callAsync(getKrollObject(), event)
+			}
+			.addOnFailureListener { error ->
+				val event = KrollDict()
+				event["success"] = false
+				event["error"] = error.localizedMessage
+
+				callback.callAsync(getKrollObject(), event)
+			}
+	}
 
 	@Kroll.method
 	fun updateDocument(params: KrollDict) {
