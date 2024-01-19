@@ -96,7 +96,11 @@
       return;
     }
 
-    [callback call:@[@{ @"success": @(YES), @"document": [snapshot data] }] thisObject:self];
+    if ([snapshot data] != nil) {
+      [callback call:@[@{ @"success": @(YES), @"document": [snapshot data] }] thisObject:self];
+    } else {
+      [callback call:@[@{ @"success": @(YES) }] thisObject:self];
+    }
   }];
 }
 
