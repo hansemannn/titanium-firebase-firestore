@@ -15,6 +15,7 @@ import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
+import org.appcelerator.titanium.util.TiConvert
 
 
 @Kroll.module(name = "TitaniumFirebaseFirestore", id = "firebase.firestore")
@@ -105,18 +106,24 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 	fun getDocument(params: KrollDict) {
 		val callback = params["callback"] as KrollFunction
 		val collection = params["collection"] as String
-		val document = params["document"] as String
-
+		val document = TiConvert.toString(params["document"],"")
+		if (document.isEmpty()){
+			return
+		}
 		val docRef = Firebase.firestore.collection(collection).document(document)
 		docRef.get()
 			.addOnSuccessListener { it ->
 
-				val d = KrollDict(it.data)
-				d["_id"] = it.id
-
 				val event = KrollDict()
+				if (it != null && it.data != null) {
+					val d = KrollDict(it.data)
+					d["_id"] = it.id
+					event["document"] = d
+				} else {
+					event["document"] = "";
+				}
+
 				event["success"] = true
-				event["document"] = d
 
 				callback.callAsync(getKrollObject(), event)
 			}
