@@ -31,17 +31,30 @@
 
   KrollCallback *callback = params[@"callback"];
   NSString *collection = params[@"collection"];
+  NSString *document = params[@"document"];
   NSDictionary *data = params[@"data"]; // TODO: Parse "FIRFieldValue" proxy types
 
-  __block FIRDocumentReference *ref = [[FIRFirestore.firestore collectionWithPath:collection] addDocumentWithData:data
-                                                                   completion:^(NSError * _Nullable error) {
-  if (error != nil) {
-      [callback call:@[@{ @"success": @(NO), @"error": error.localizedDescription }] thisObject:self];
-      return;
-    }
+    if (document != nil) {
+        [[[FIRFirestore.firestore collectionWithPath:collection]  documentWithPath:document] setData:data
+                                                                     completion:^(NSError * _Nullable error) {
+    if (error != nil) {
+        [callback call:@[@{ @"success": @(NO), @"error": error.localizedDescription }] thisObject:self];
+        return;
+      }
 
-    [callback call:@[@{ @"success": @(YES), @"documentID": NULL_IF_NIL(ref.documentID), @"documentPath": NULL_IF_NIL(ref.path) }] thisObject:self];
-  }];
+      [callback call:@[@{ @"success": @(YES), @"documentID": document, @"documentPath": document }] thisObject:self];
+    }];
+  } else {
+    __block FIRDocumentReference *ref = [[FIRFirestore.firestore collectionWithPath:collection] addDocumentWithData:data
+                                                                     completion:^(NSError * _Nullable error) {
+    if (error != nil) {
+        [callback call:@[@{ @"success": @(NO), @"error": error.localizedDescription }] thisObject:self];
+        return;
+      }
+
+      [callback call:@[@{ @"success": @(YES), @"documentID": NULL_IF_NIL(ref.documentID), @"documentPath": NULL_IF_NIL(ref.path) }] thisObject:self];
+    }];
+  }
 }
 
 - (void)getDocuments:(id)params
@@ -87,6 +100,11 @@
   }];
 }
 
+- (void)getDocument:(id)params
+{
+  [self getSingleDocument:params];
+}
+
 - (void)updateDocument:(id)params
 {
   ENSURE_SINGLE_ARG(params, NSDictionary);
@@ -129,7 +147,7 @@
 - (FirebaseFirestoreFieldValueProxy *)increment:(id)value
 {
   ENSURE_SINGLE_ARG(value, NSNumber);
-  
+
   FIRFieldValue *fieldValue = [FIRFieldValue fieldValueForIntegerIncrement:[TiUtils intValue:value]];
   return [[FirebaseFirestoreFieldValueProxy alloc] _initWithPageContext:pageContext andFieldValue:fieldValue];
 }
