@@ -9,13 +9,16 @@
 
 package firebase.firestore
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
+import org.appcelerator.kroll.common.Log
 import org.appcelerator.titanium.util.TiConvert
+import kotlin.reflect.typeOf
 
 
 @Kroll.module(name = "TitaniumFirebaseFirestore", id = "firebase.firestore")
@@ -83,7 +86,17 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 
 				val list = mutableListOf<Map<String, Any>>()
 				for (document in it.documents) {
-					val d = KrollDict(document.data)
+					val d = KrollDict()
+
+					document.data!!.toMap().forEach() {
+						if ((it.value is Timestamp)) {
+							val ts:Timestamp = it.value as Timestamp;
+							d[it.key] = ts.seconds
+						} else {
+							d[it.key] = it.value;
+						}
+					}
+
 					d["_id"] = document.id
 					list.add(d)
 				}
@@ -116,7 +129,18 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 
 				val event = KrollDict()
 				if (it != null && it.data != null) {
-					val d = KrollDict(it.data)
+					val d = KrollDict()
+
+					// map entries
+					it.data!!.toMap().forEach() {
+						if ((it.value is Timestamp)) {
+							val ts:Timestamp = it.value as Timestamp;
+							d[it.key] = ts.seconds
+						} else {
+							d[it.key] = it.value;
+						}
+					}
+
 					d["_id"] = it.id
 					event["document"] = d
 				} else {
