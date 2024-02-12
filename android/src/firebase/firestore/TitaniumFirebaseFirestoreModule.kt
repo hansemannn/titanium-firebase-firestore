@@ -34,76 +34,25 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		if (params.containsKeyAndNotNull("document")) {
 			document = params["document"] as String
 		}
+		var subcollection = "";
+		if (params.containsKeyAndNotNull("subcollection")) {
+			subcollection = params["subcollection"] as String
+		}
+
 		val data = params.getKrollDict("data")
 		if (document.isEmpty()) {
 			// auto-id document
-			Firebase.firestore.collection(collection)
-					.add(data)
-					.addOnSuccessListener {
-						val event = KrollDict()
-						event["success"] = true
-						event["documentID"] = it.id
+			var doc = Firebase.firestore.collection(collection)
 
-						callback.callAsync(getKrollObject(), event)
-					}
-					.addOnFailureListener { error ->
-						val event = KrollDict()
-						event["success"] = false
-						event["error"] = error.localizedMessage
+			if (subcollection != "") {
+				doc = doc.document().collection(subcollection)
+			}
 
-						callback.callAsync(getKrollObject(), event)
-					}
-		} else {
-			// fixed document
-			Firebase.firestore.collection(collection)
-					.document(document)
-					.set(data)
-					.addOnSuccessListener{
-						val event = KrollDict()
-						event["success"] = true
-						event["documentID"] = document
-
-						callback.callAsync(getKrollObject(), event)
-					}
-					.addOnFailureListener { error ->
-						val event = KrollDict()
-						event["success"] = false
-						event["error"] = error.localizedMessage
-
-						callback.callAsync(getKrollObject(), event)
-					}
-		}
-	}
-
-	@Kroll.method
-	fun getDocuments(params: KrollDict) {
-		val callback = params["callback"] as KrollFunction
-		val collection = params["collection"] as String
-
-		Firebase.firestore.collection(collection)
-			.get()
-			.addOnSuccessListener { it ->
-
-				val list = mutableListOf<Map<String, Any>>()
-				for (document in it.documents) {
-					val d = KrollDict()
-
-					document.data!!.toMap().forEach() {
-						if ((it.value is Timestamp)) {
-							val ts:Timestamp = it.value as Timestamp;
-							d[it.key] = ts.seconds
-						} else {
-							d[it.key] = it.value;
-						}
-					}
-
-					d["_id"] = document.id
-					list.add(d)
-				}
-
+			doc.add(data)
+			.addOnSuccessListener {
 				val event = KrollDict()
 				event["success"] = true
-				event["documents"] = list.toTypedArray()
+				event["documentID"] = it.id
 
 				callback.callAsync(getKrollObject(), event)
 			}
@@ -114,6 +63,78 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 
 				callback.callAsync(getKrollObject(), event)
 			}
+		} else {
+			// fixed document
+			var doc = Firebase.firestore.collection(collection)
+					.document(document)
+
+			if (subcollection != "") {
+				doc = doc.collection(subcollection).document()
+			}
+
+			doc.set(data)
+			.addOnSuccessListener{
+				val event = KrollDict()
+				event["success"] = true
+				event["documentID"] = document
+
+				callback.callAsync(getKrollObject(), event)
+			}
+			.addOnFailureListener { error ->
+				val event = KrollDict()
+				event["success"] = false
+				event["error"] = error.localizedMessage
+
+				callback.callAsync(getKrollObject(), event)
+			}
+		}
+	}
+
+	@Kroll.method
+	fun getDocuments(params: KrollDict) {
+		val callback = params["callback"] as KrollFunction
+		val collection = params["collection"] as String
+		val document = params["document"] as String
+		val subcollection = TiConvert.toString(params["subcollection"],"")
+
+		var fireData = Firebase.firestore.collection(collection)
+		if (subcollection != "" && document != "") {
+			fireData = Firebase.firestore.collection(collection).document(document).collection(subcollection)
+		}
+
+		fireData.get()
+		.addOnSuccessListener { it ->
+
+			val list = mutableListOf<Map<String, Any>>()
+			for (document in it.documents) {
+				val d = KrollDict()
+
+				document.data!!.toMap().forEach() {
+					if ((it.value is Timestamp)) {
+						val ts:Timestamp = it.value as Timestamp;
+						d[it.key] = ts.seconds
+					} else {
+						d[it.key] = it.value;
+					}
+				}
+
+				d["_id"] = document.id
+				list.add(d)
+			}
+
+			val event = KrollDict()
+			event["success"] = true
+			event["documents"] = list.toTypedArray()
+
+			callback.callAsync(getKrollObject(), event)
+		}
+		.addOnFailureListener { error ->
+			val event = KrollDict()
+			event["success"] = false
+			event["error"] = error.localizedMessage
+
+			callback.callAsync(getKrollObject(), event)
+		}
 	}
 	@Kroll.method
 	fun getDocument(params: KrollDict) {
@@ -123,8 +144,8 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		if (document.isEmpty()){
 			return
 		}
-		val docRef = Firebase.firestore.collection(collection).document(document)
-		docRef.get()
+		Firebase.firestore.collection(collection).document(document)
+			.get()
 			.addOnSuccessListener { it ->
 
 				val event = KrollDict()
