@@ -211,22 +211,29 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		val callback = params["callback"] as KrollFunction
 		val collection = params["collection"] as String
 		val document = params["document"] as String
+		val subcollection = params["subcollection"] as String
+		val subDocument = params["subdocument"] as String
 
-		Firebase.firestore.collection(collection)
-			.document(document)
-			.delete()
-			.addOnSuccessListener {
-				val event = KrollDict()
-				event["success"] = true
+		var fireDoc = Firebase.firestore.collection(collection).document(document)
 
-				callback.callAsync(getKrollObject(), event)
-			}
-			.addOnFailureListener { error ->
-				val event = KrollDict()
-				event["success"] = false
-				event["error"] = error.localizedMessage
+		if (subcollection !="" && subDocument != "") {
+			fireDoc = Firebase.firestore.collection(collection).document(subDocument)
+					.collection(subcollection).document(document)
+		}
 
-				callback.callAsync(getKrollObject(), event)
-			}
+		fireDoc.delete()
+		.addOnSuccessListener {
+			val event = KrollDict()
+			event["success"] = true
+
+			callback.callAsync(getKrollObject(), event)
+		}
+		.addOnFailureListener { error ->
+			val event = KrollDict()
+			event["success"] = false
+			event["error"] = error.localizedMessage
+
+			callback.callAsync(getKrollObject(), event)
+		}
 	}
 }
