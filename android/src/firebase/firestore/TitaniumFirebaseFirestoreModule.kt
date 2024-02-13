@@ -42,13 +42,13 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		val data = params.getKrollDict("data")
 		if (document.isEmpty()) {
 			// auto-id document
-			var doc = Firebase.firestore.collection(collection)
+			var fireCollection = Firebase.firestore.collection(collection)
 
 			if (subcollection != "") {
-				doc = doc.document().collection(subcollection)
+				fireCollection = fireCollection.document().collection(subcollection)
 			}
 
-			doc.add(data)
+			fireCollection.add(data)
 			.addOnSuccessListener {
 				val event = KrollDict()
 				event["success"] = true
@@ -65,14 +65,14 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 			}
 		} else {
 			// fixed document
-			var doc = Firebase.firestore.collection(collection)
+			var fireCollection = Firebase.firestore.collection(collection)
 					.document(document)
 
 			if (subcollection != "") {
-				doc = doc.collection(subcollection).document()
+				fireCollection = fireCollection.collection(subcollection).document()
 			}
 
-			doc.set(data)
+			fireCollection.set(data)
 			.addOnSuccessListener{
 				val event = KrollDict()
 				event["success"] = true
@@ -97,12 +97,12 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		val document = params["document"] as String
 		val subcollection = TiConvert.toString(params["subcollection"],"")
 
-		var fireData = Firebase.firestore.collection(collection)
+		var fireCollection = Firebase.firestore.collection(collection)
 		if (subcollection != "" && document != "") {
-			fireData = Firebase.firestore.collection(collection).document(document).collection(subcollection)
+			fireCollection = Firebase.firestore.collection(collection).document(document).collection(subcollection)
 		}
 
-		fireData.get()
+		fireCollection.get()
 		.addOnSuccessListener { it ->
 
 			val list = mutableListOf<Map<String, Any>>()
@@ -187,9 +187,16 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		val collection = params["collection"] as String
 		val data = params.getKrollDict("data")
 		val document = params["document"] as String
+		val subcollection = params["subcollection"] as String
+		val subdocument = params["subdocument"] as String
 
-		Firebase.firestore.collection(collection)
-			.document(document)
+		var fireCollection = Firebase.firestore.collection(collection);
+
+		if (subcollection.isNotEmpty()) {
+			fireCollection = fireCollection.document(subdocument).collection(subcollection)
+		}
+
+		fireCollection.document(document)
 			.update(data)
 			.addOnSuccessListener {
 				val event = KrollDict()
@@ -214,14 +221,14 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		val subcollection = params["subcollection"] as String
 		val subDocument = params["subdocument"] as String
 
-		var fireDoc = Firebase.firestore.collection(collection).document(document)
+		var fireCollection = Firebase.firestore.collection(collection).document(document)
 
 		if (subcollection !="" && subDocument != "") {
-			fireDoc = Firebase.firestore.collection(collection).document(subDocument)
+			fireCollection = Firebase.firestore.collection(collection).document(subDocument)
 					.collection(subcollection).document(document)
 		}
 
-		fireDoc.delete()
+		fireCollection.delete()
 		.addOnSuccessListener {
 			val event = KrollDict()
 			event["success"] = true
