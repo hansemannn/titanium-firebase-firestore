@@ -10,7 +10,6 @@
 package firebase.firestore
 
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import org.appcelerator.kroll.KrollDict
@@ -91,6 +90,47 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
         }
     }
 
+    private fun addListener(params: KrollDict) {
+        val collection = params["collection"] as String
+        val document = TiConvert.toString(params["document"], "")
+        val subcollection = TiConvert.toString(params["subcollection"], "")
+
+        var fireCollection = Firebase.firestore.collection(collection)
+        if (subcollection != "" && document != "") {
+            fireCollection = Firebase.firestore.collection(collection).document(document)
+                .collection(subcollection)
+        }
+
+        fireCollection.addSnapshotListener { value, e ->
+            if (e != null) {
+                return@addSnapshotListener
+            }
+
+            if (value != null) {
+
+                val kd = KrollDict()
+                val kdItems = arrayOfNulls<Any>(value.documentChanges.size)
+                var i:Int = 0
+
+                value.documentChanges.forEach { item ->
+                    val d = KrollDict()
+                    val doc = KrollDict()
+                    item.document.data.toMap().forEach {
+                        d[it.key] = it.value
+                    }
+                    doc["name"] = item.document.id
+                    doc["items"] = d;
+                    kdItems[i] = doc
+                    i++
+                }
+
+                kd["documents"] = kdItems
+                kd["collection"] = collection
+                fireEvent("change", kd)
+            }
+        }
+    }
+
     @Kroll.method
     fun getDocuments(params: KrollDict) {
         val callback = params["callback"] as KrollFunction
@@ -104,7 +144,12 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
                 .collection(subcollection)
         }
 
-        fireCollection.get()
+        if (TiConvert.toBoolean(params["addListeners"],false)) {
+            addListener(params);
+        }
+
+        fireCollection
+            .get()
             .addOnSuccessListener { it ->
 
                 val list = mutableListOf<Map<String, Any>>()
