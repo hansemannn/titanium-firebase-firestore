@@ -48,7 +48,7 @@
 
     for (FIRDocumentChange *documentChange in snapshot.documentChanges) {
       [documents addObject:@{
-        @"name": documentChange.document.documentID,
+        @"document": documentChange.document.documentID,
         @"items": [documentChange.document data]
       }];
     }
