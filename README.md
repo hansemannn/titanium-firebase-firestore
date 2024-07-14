@@ -71,6 +71,7 @@ To get the data back you can use `getDocuments()` or `getDocument()`. This examp
 ```js
 TiFirestore.getDocuments({
   collection: 'data',
+  addListeners: true, // optional: If set to `true`, it calls the "change" event upon document changes
   callback: event => {
     if (!event.success) {
       console.error('Could not read Firestore:', event.error);
