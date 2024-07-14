@@ -118,7 +118,7 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
                     item.document.data.toMap().forEach {
                         d[it.key] = it.value
                     }
-                    doc["name"] = item.document.id
+                    doc["document"] = item.document.id
                     doc["items"] = d;
                     kdItems[i] = doc
                     i++
