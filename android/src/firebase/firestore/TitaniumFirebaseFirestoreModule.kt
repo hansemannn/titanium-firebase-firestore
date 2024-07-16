@@ -10,15 +10,12 @@
 package firebase.firestore
 
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.protobuf.MapEntryLite
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
-import org.appcelerator.kroll.common.Log
 import org.appcelerator.titanium.util.TiConvert
 
 
@@ -135,7 +132,7 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
         }
     }
 
-    private fun convertData(d:KrollDict, it: Map. Entry<String, Any>) {
+    private fun convertData(d: KrollDict, it: Map.Entry<String, Any>) {
         if ((it.value is Timestamp)) {
             val ts: Timestamp = it.value as Timestamp
             d[it.key] = ts.seconds
