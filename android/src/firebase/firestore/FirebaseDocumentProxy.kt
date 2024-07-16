@@ -83,6 +83,19 @@ class FirebaseDocumentProxy(param: DocumentReference, doc: String, col: String) 
                         if ((it.value is Timestamp)) {
                             val ts: Timestamp = it.value as Timestamp
                             d[it.key] = ts.seconds
+                        } else if (it.value is ArrayList<*>) {
+                            val convertedList = mutableListOf<Any>()
+                            for (item in it.value as ArrayList<*>) {
+                                if (item is Map<*, *>) {
+                                    convertedList.add(item.toMutableMap())
+                                } else {
+                                    // Convert any ArrayList<*> elements to a JavaScript array
+                                    convertedList.add(
+                                        (item as? ArrayList<*>)?.toTypedArray() ?: item
+                                    )
+                                }
+                            }
+                            d[it.key] = convertedList.toTypedArray()
                         } else {
                             d[it.key] = it.value
                         }
@@ -121,6 +134,19 @@ class FirebaseDocumentProxy(param: DocumentReference, doc: String, col: String) 
                     if ((it.value is Timestamp)) {
                         val ts: Timestamp = it.value as Timestamp
                         kd[it.key] = ts.seconds
+                    }  else if (it.value is ArrayList<*>) {
+                        val convertedList = mutableListOf<Any>()
+                        for (item in it.value as ArrayList<*>) {
+                            if (item is Map<*, *>) {
+                                convertedList.add(item.toMutableMap())
+                            } else {
+                                // Convert any ArrayList<*> elements to a JavaScript array
+                                convertedList.add(
+                                    (item as? ArrayList<*>)?.toTypedArray() ?: item
+                                )
+                            }
+                        }
+                        kd[it.key] = convertedList.toTypedArray()
                     } else {
                         kd[it.key] = it.value
                     }

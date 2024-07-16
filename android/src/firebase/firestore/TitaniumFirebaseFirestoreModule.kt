@@ -10,12 +10,15 @@
 package firebase.firestore
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.protobuf.MapEntryLite
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
+import org.appcelerator.kroll.common.Log
 import org.appcelerator.titanium.util.TiConvert
 
 
@@ -112,29 +115,13 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
                 var i: Int = 0
 
                 value.documentChanges.forEach { item ->
-                    val d = KrollDict()
+
                     val doc = KrollDict()
+                    val d = KrollDict()
                     item.document.data.toMap().forEach {
-                        if ((it.value is Timestamp)) {
-                            val ts: Timestamp = it.value as Timestamp
-                            d[it.key] = ts.seconds
-                        } else if (it.value is ArrayList<*>) {
-                            val convertedList = mutableListOf<Any>()
-                            for (item in it.value as ArrayList<*>) {
-                                if (item is Map<*, *>) {
-                                    convertedList.add(item.toMutableMap())
-                                } else {
-                                    // Convert any ArrayList<*> elements to a JavaScript array
-                                    convertedList.add(
-                                        (item as? ArrayList<*>)?.toTypedArray() ?: item
-                                    )
-                                }
-                            }
-                            d[it.key] = convertedList.toTypedArray()
-                        } else {
-                            d[it.key] = it.value
-                        }
+                        convertData(d, it)
                     }
+
                     doc["document"] = item.document.id
                     doc["items"] = d
                     kdItems[i] = doc
@@ -145,6 +132,45 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
                 kd["collection"] = collection
                 fireEvent("change", kd)
             }
+        }
+    }
+
+    private fun convertData(d:KrollDict, it: Map. Entry<String, Any>) {
+        if ((it.value is Timestamp)) {
+            val ts: Timestamp = it.value as Timestamp
+            d[it.key] = ts.seconds
+        } else if (it.value is ArrayList<*>) {
+            val convertedList = mutableListOf<Any>()
+            for (item in it.value as ArrayList<*>) {
+                if (item is Map<*, *>) {
+                    val hashKd = KrollDict()
+                    for (childItem in item) {
+                        hashKd[childItem.key.toString()] = childItem.value.toString()
+                    }
+                    convertedList.add(hashKd)
+                } else {
+                    // Convert any ArrayList<*> elements to a JavaScript array
+                    convertedList.add(
+                        (item as? ArrayList<*>)?.toTypedArray() ?: item.toString()
+                    )
+                }
+            }
+            d[it.key] = convertedList.toTypedArray()
+        } else if (it.value.javaClass.toString() == "class com.google.firebase.firestore.DocumentReference") {
+            // skip
+        } else if (it.value.javaClass.toString() == "class java.util.HashMap") {
+            val hashKd = KrollDict()
+            try {
+                for (item in it.value as HashMap<*, *>) {
+                    // todo: value can be an array again
+                    hashKd[item.key.toString()] = item.value.toString()
+                }
+                d[it.key] = hashKd
+            } catch (ex: Exception) {
+                // skip
+            }
+        } else {
+            d[it.key] = it.value
         }
     }
 
@@ -174,27 +200,8 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
                     val d = KrollDict()
 
                     documentRef.data!!.toMap().forEach {
-                        if ((it.value is Timestamp)) {
-                            val ts: Timestamp = it.value as Timestamp
-                            d[it.key] = ts.seconds
-                        } else if (it.value is ArrayList<*>) {
-                            val convertedList = mutableListOf<Any>()
-                            for (item in it.value as ArrayList<*>) {
-                                if (item is Map<*, *>) {
-                                    convertedList.add(item.toMutableMap())
-                                } else {
-                                    // Convert any ArrayList<*> elements to a JavaScript array
-                                    convertedList.add(
-                                        (item as? ArrayList<*>)?.toTypedArray() ?: item
-                                    )
-                                }
-                            }
-                            d[it.key] = convertedList.toTypedArray()
-                        } else {
-                            d[it.key] = it.value
-                        }
+                        convertData(d, it)
                     }
-                    // d["document"] = FirebaseDocumentProxy(documentRef.reference, documentRef.id, collection);
                     d["_id"] = documentRef.id
                     list.add(d)
                 }
