@@ -16,7 +16,6 @@ import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
-import org.appcelerator.kroll.common.Log
 import org.appcelerator.titanium.util.TiConvert
 
 
@@ -52,7 +51,7 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
                     val event = KrollDict()
                     event["success"] = true
                     event["documentID"] = it.id
-                    event["document"] =  FirebaseDocumentProxy(it, it.id, collection)
+                    event["document"] = FirebaseDocumentProxy(it, it.id, collection)
                     callback.callAsync(getKrollObject(), event)
 
                 }
@@ -110,16 +109,34 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
 
                 val kd = KrollDict()
                 val kdItems = arrayOfNulls<Any>(value.documentChanges.size)
-                var i:Int = 0
+                var i: Int = 0
 
                 value.documentChanges.forEach { item ->
                     val d = KrollDict()
                     val doc = KrollDict()
                     item.document.data.toMap().forEach {
-                        d[it.key] = it.value
+                        if ((it.value is Timestamp)) {
+                            val ts: Timestamp = it.value as Timestamp
+                            d[it.key] = ts.seconds
+                        } else if (it.value is ArrayList<*>) {
+                            val convertedList = mutableListOf<Any>()
+                            for (item in it.value as ArrayList<*>) {
+                                if (item is Map<*, *>) {
+                                    convertedList.add(item.toMutableMap())
+                                } else {
+                                    // Convert any ArrayList<*> elements to a JavaScript array
+                                    convertedList.add(
+                                        (item as? ArrayList<*>)?.toTypedArray() ?: item
+                                    )
+                                }
+                            }
+                            d[it.key] = convertedList.toTypedArray()
+                        } else {
+                            d[it.key] = it.value
+                        }
                     }
                     doc["document"] = item.document.id
-                    doc["items"] = d;
+                    doc["items"] = d
                     kdItems[i] = doc
                     i++
                 }
@@ -144,8 +161,8 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
                 .collection(subcollection)
         }
 
-        if (TiConvert.toBoolean(params["addListeners"],false)) {
-            addListener(params);
+        if (TiConvert.toBoolean(params["addListeners"], false)) {
+            addListener(params)
         }
 
         fireCollection
@@ -155,11 +172,24 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
                 val list = mutableListOf<Map<String, Any>>()
                 for (documentRef in it.documents) {
                     val d = KrollDict()
-                    Log.i("---", "ID: " + documentRef.id+ "->"+ documentRef.reference);
+
                     documentRef.data!!.toMap().forEach {
                         if ((it.value is Timestamp)) {
                             val ts: Timestamp = it.value as Timestamp
                             d[it.key] = ts.seconds
+                        } else if (it.value is ArrayList<*>) {
+                            val convertedList = mutableListOf<Any>()
+                            for (item in it.value as ArrayList<*>) {
+                                if (item is Map<*, *>) {
+                                    convertedList.add(item.toMutableMap())
+                                } else {
+                                    // Convert any ArrayList<*> elements to a JavaScript array
+                                    convertedList.add(
+                                        (item as? ArrayList<*>)?.toTypedArray() ?: item
+                                    )
+                                }
+                            }
+                            d[it.key] = convertedList.toTypedArray()
                         } else {
                             d[it.key] = it.value
                         }
@@ -198,7 +228,6 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
 
     @Kroll.method
     fun updateDocument(params: KrollDict) {
-        Log.i("Firestore", "Deprecated. Please use the new Document syntax")
         val callback = params["callback"] as KrollFunction
         val collection = params["collection"] as String
         val data = params.getKrollDict("data")
@@ -231,7 +260,6 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
 
     @Kroll.method
     fun deleteDocument(params: KrollDict) {
-        Log.i("Firestore", "Deprecated. Please use the new Document syntax")
         val callback = params["callback"] as KrollFunction
         val collection = params["collection"] as String
         val document = params["document"] as String
