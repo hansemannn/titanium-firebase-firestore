@@ -10,11 +10,11 @@
 
 @implementation TiFirestoreUtils
 
-+ (NSDictionary *)mappedFirestoreValue:(NSDictionary<NSString *, id> *)value
++ (NSDictionary *)mappedFirestoreDocument:(FIRDocumentSnapshot *)document
 {
-  NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+  NSMutableDictionary *result = [[NSMutableDictionary alloc] initWithDictionary:@{ @"_id": document.documentID }];
 
-  [value enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull value, BOOL *_Nonnull stop) {
+  [document.data enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull value, BOOL *_Nonnull stop) {
     // Handle timestamps as a native type
     if ([value isKindOfClass:[FIRTimestamp class]]) {
       FIRTimestamp *timestamp = (FIRTimestamp *)value;

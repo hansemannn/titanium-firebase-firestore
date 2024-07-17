@@ -50,7 +50,7 @@
     for (FIRDocumentChange *documentChange in snapshot.documentChanges) {
       [documents addObject:@{
         @"document": documentChange.document.documentID,
-        @"items": [TiFirestoreUtils mappedFirestoreValue:documentChange.document.data]
+        @"items": [TiFirestoreUtils mappedFirestoreDocument:documentChange.document]
       }];
     }
     
@@ -181,7 +181,7 @@
         
         // Map the documents to make sure it's a bridgeable type
         [snapshot.documents enumerateObjectsUsingBlock:^(FIRQueryDocumentSnapshot *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-            [documents addObject:[TiFirestoreUtils mappedFirestoreValue:obj.data]];
+            [documents addObject:[TiFirestoreUtils mappedFirestoreDocument:obj]];
         }];
         [callback call:@[ @{
                               @"success" : @(YES),
@@ -213,7 +213,7 @@
     NSMutableArray<NSDictionary<NSString *, id> *> *documents = [NSMutableArray arrayWithCapacity:snapshot.documents.count];
 
     [snapshot.documents enumerateObjectsUsingBlock:^(FIRQueryDocumentSnapshot *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-      [documents addObject:[TiFirestoreUtils mappedFirestoreValue:obj.data]];
+      [documents addObject:[TiFirestoreUtils mappedFirestoreDocument:obj]];
     }];
 
     [callback call:@[ @{@"success" : @(YES),
@@ -241,7 +241,7 @@
     }
 
     if ([snapshot data] != nil) {
-      [callback call:@[@{ @"success": @(YES), @"document": [TiFirestoreUtils mappedFirestoreValue:snapshot.data] }] thisObject:self];
+      [callback call:@[@{ @"success": @(YES), @"document": [TiFirestoreUtils mappedFirestoreDocument:snapshot] }] thisObject:self];
     } else {
       [callback call:@[@{ @"success": @(YES) }] thisObject:self];
     }

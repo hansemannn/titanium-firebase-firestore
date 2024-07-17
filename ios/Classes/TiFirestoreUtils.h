@@ -6,12 +6,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <FirebaseFirestore/FirebaseFirestore.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TiFirestoreUtils : NSObject
 
-+ (NSDictionary *)mappedFirestoreValue:(id)value;
++ (NSDictionary *)mappedFirestoreDocument:(FIRDocumentSnapshot *)document;
 
 @end
 
