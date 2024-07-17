@@ -18,10 +18,11 @@
     // Handle timestamps as a native type
     if ([value isKindOfClass:[FIRTimestamp class]]) {
       FIRTimestamp *timestamp = (FIRTimestamp *)value;
-      result[key] = @{
-        @"seconds" : @(timestamp.seconds),
-        @"nanoseconds" : @(timestamp.nanoseconds)
-      };
+      result[key] = timestamp.dateValue;
+      // Handle nested objects
+    } else if ([value isKindOfClass:[FIRGeoPoint class]]) {
+      FIRGeoPoint *geoPoint = (FIRGeoPoint *)value;
+      result[key] = @{ @"latitude": @(geoPoint.latitude), @"longitude": @(geoPoint.longitude) };
       // Handle all other values directly
     } else {
       result[key] = value;

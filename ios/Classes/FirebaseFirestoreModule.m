@@ -50,7 +50,7 @@
     for (FIRDocumentChange *documentChange in snapshot.documentChanges) {
       [documents addObject:@{
         @"document": documentChange.document.documentID,
-        @"items": [documentChange.document data]
+        @"items": [TiFirestoreUtils mappedFirestoreValue:documentChange.document.data]
       }];
     }
     
@@ -241,7 +241,7 @@
     }
 
     if ([snapshot data] != nil) {
-      [callback call:@[@{ @"success": @(YES), @"document": [snapshot data] }] thisObject:self];
+      [callback call:@[@{ @"success": @(YES), @"document": [TiFirestoreUtils mappedFirestoreValue:snapshot.data] }] thisObject:self];
     } else {
       [callback call:@[@{ @"success": @(YES) }] thisObject:self];
     }
