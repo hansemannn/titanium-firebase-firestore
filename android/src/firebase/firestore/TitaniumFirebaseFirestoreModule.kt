@@ -222,11 +222,41 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
     fun getDocument(params: KrollDict): FirebaseDocumentProxy? {
         //val callback = params["callback"] as KrollFunction
         val collection = params["collection"] as String
+        val callback = params["callback"] as KrollFunction
         val document = TiConvert.toString(params["document"], "")
         if (document.isEmpty()) {
             return null
         }
         val docRef = Firebase.firestore.collection(collection).document(document)
+
+        docRef.get().addOnSuccessListener { it ->
+                val event = KrollDict()
+                if (it != null && it.data != null) {
+                    val d = KrollDict()
+
+                    // map entries
+                    it.data!!.toMap().forEach {
+                        convertData(d, it)
+                    }
+
+                    d["_id"] = it.id
+                    event["document"] = d
+                } else {
+                    event["document"] = ""
+                }
+
+                event["success"] = true
+
+                callback.callAsync(getKrollObject(), event)
+            }
+            .addOnFailureListener { error ->
+                val event = KrollDict()
+                event["success"] = false
+                event["error"] = error.localizedMessage
+
+                callback.callAsync(getKrollObject(), event)
+            }
+
         return FirebaseDocumentProxy(docRef, document, collection)
     }
 
