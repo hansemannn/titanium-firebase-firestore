@@ -231,7 +231,7 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
 
         docRef.get().addOnSuccessListener { it ->
                 val event = KrollDict()
-                if (it != null && it.data != null) {
+                if (it?.data != null) {
                     val d = KrollDict()
 
                     // map entries
@@ -241,13 +241,9 @@ class TitaniumFirebaseFirestoreModule : KrollModule() {
 
                     d["_id"] = it.id
                     event["document"] = d
-                } else {
-                    event["document"] = ""
+                    event["success"] = true
+                    callback.callAsync(getKrollObject(), event)
                 }
-
-                event["success"] = true
-
-                callback.callAsync(getKrollObject(), event)
             }
             .addOnFailureListener { error ->
                 val event = KrollDict()
