@@ -9,120 +9,313 @@
 
 package firebase.firestore
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import org.appcelerator.kroll.KrollDict
 import org.appcelerator.kroll.KrollFunction
 import org.appcelerator.kroll.KrollModule
 import org.appcelerator.kroll.annotations.Kroll
+import org.appcelerator.titanium.util.TiConvert
 
 
 @Kroll.module(name = "TitaniumFirebaseFirestore", id = "firebase.firestore")
-class TitaniumFirebaseFirestoreModule: KrollModule() {
+class TitaniumFirebaseFirestoreModule : KrollModule() {
 
-	// Methods
+    // Methods
 
-	@Kroll.method
-	fun addDocument(params: KrollDict) {
-		val callback = params["callback"] as KrollFunction
-		val collection = params["collection"] as String
-		val data = params.getKrollDict("data")
+    @Kroll.method
+    fun addDocument(params: KrollDict) {
+        val callback = params["callback"] as KrollFunction
+        val collection = params["collection"] as String
+        var document = ""
+        if (params.containsKeyAndNotNull("document")) {
+            document = params["document"] as String
+        }
+        var subcollection = ""
+        if (params.containsKeyAndNotNull("subcollection")) {
+            subcollection = params["subcollection"] as String
+        }
 
-		Firebase.firestore.collection(collection)
-			.add(data)
-			.addOnSuccessListener {
-				val event = KrollDict()
-				event["success"] = true
-				event["documentID"] = it.id
+        val data = params.getKrollDict("data")
+        if (document.isEmpty()) {
+            // auto-id document
+            var fireCollection = Firebase.firestore.collection(collection)
 
-				callback.callAsync(getKrollObject(), event)
-			}
-			.addOnFailureListener { error ->
-				val event = KrollDict()
-				event["success"] = false
-				event["error"] = error.localizedMessage
+            if (subcollection != "") {
+                fireCollection = fireCollection.document().collection(subcollection)
+            }
 
-				callback.callAsync(getKrollObject(), event)
-			}
-	}
+            fireCollection.add(data)
+                .addOnSuccessListener {
+                    val event = KrollDict()
+                    event["success"] = true
+                    event["documentID"] = it.id
+                    event["document"] = FirebaseDocumentProxy(it, it.id, collection)
+                    callback.callAsync(getKrollObject(), event)
 
-	@Kroll.method
-	fun getDocuments(params: KrollDict) {
-		val callback = params["callback"] as KrollFunction
-		val collection = params["collection"] as String
+                }
+                .addOnFailureListener { error ->
+                    val event = KrollDict()
+                    event["success"] = false
+                    event["error"] = error.localizedMessage
 
-		Firebase.firestore.collection(collection)
-			.get()
-			.addOnSuccessListener { it ->
+                    callback.callAsync(getKrollObject(), event)
+                }
+        } else {
+            // fixed document
+            var fireCollection = Firebase.firestore.collection(collection)
+                .document(document)
 
-				val list = mutableListOf<Map<String, Any>>()
-				for (document in it.documents) {
-					val d = KrollDict(document.data)
-					d["_id"] = document.id
-					list.add(d)
-				}
+            if (subcollection != "") {
+                fireCollection = fireCollection.collection(subcollection).document()
+            }
 
-				val event = KrollDict()
-				event["success"] = true
-				event["documents"] = list.toTypedArray()
+            fireCollection.set(data)
+                .addOnSuccessListener {
+                    val event = KrollDict()
+                    event["success"] = true
+                    event["documentID"] = document
 
-				callback.callAsync(getKrollObject(), event)
-			}
-			.addOnFailureListener { error ->
-				val event = KrollDict()
-				event["success"] = false
-				event["error"] = error.localizedMessage
+                    callback.callAsync(getKrollObject(), event)
+                }
+                .addOnFailureListener { error ->
+                    val event = KrollDict()
+                    event["success"] = false
+                    event["error"] = error.localizedMessage
 
-				callback.callAsync(getKrollObject(), event)
-			}
-	}
+                    callback.callAsync(getKrollObject(), event)
+                }
+        }
+    }
 
-	@Kroll.method
-	fun updateDocument(params: KrollDict) {
-		val callback = params["callback"] as KrollFunction
-		val collection = params["collection"] as String
-		val data = params.getKrollDict("data")
-		val document = params["document"] as String
+    private fun addListener(params: KrollDict) {
+        val collection = params["collection"] as String
+        val document = TiConvert.toString(params["document"], "")
+        val subcollection = TiConvert.toString(params["subcollection"], "")
 
-		Firebase.firestore.collection(collection)
-			.document(document)
-			.update(data)
-			.addOnSuccessListener {
-				val event = KrollDict()
-				event["success"] = true
+        var fireCollection = Firebase.firestore.collection(collection)
+        if (subcollection != "" && document != "") {
+            fireCollection = Firebase.firestore.collection(collection).document(document)
+                .collection(subcollection)
+        }
 
-				callback.callAsync(getKrollObject(), event)
-			}
-			.addOnFailureListener { error ->
-				val event = KrollDict()
-				event["success"] = false
-				event["error"] = error.localizedMessage
+        fireCollection.addSnapshotListener { value, e ->
+            if (e != null) {
+                return@addSnapshotListener
+            }
 
-				callback.callAsync(getKrollObject(), event)
-			}
-	}
+            if (value != null) {
 
-	@Kroll.method
-	fun deleteDocument(params: KrollDict) {
-		val callback = params["callback"] as KrollFunction
-		val collection = params["collection"] as String
-		val document = params["document"] as String
+                val kd = KrollDict()
+                val kdItems = arrayOfNulls<Any>(value.documentChanges.size)
+                var i: Int = 0
 
-		Firebase.firestore.collection(collection)
-			.document(document)
-			.delete()
-			.addOnSuccessListener {
-				val event = KrollDict()
-				event["success"] = true
+                value.documentChanges.forEach { item ->
 
-				callback.callAsync(getKrollObject(), event)
-			}
-			.addOnFailureListener { error ->
-				val event = KrollDict()
-				event["success"] = false
-				event["error"] = error.localizedMessage
+                    val doc = KrollDict()
+                    val d = KrollDict()
+                    item.document.data.toMap().forEach {
+                        convertData(d, it)
+                    }
 
-				callback.callAsync(getKrollObject(), event)
-			}
-	}
+                    doc["document"] = item.document.id
+                    doc["items"] = d
+                    kdItems[i] = doc
+                    i++
+                }
+
+                kd["documents"] = kdItems
+                kd["collection"] = collection
+                fireEvent("change", kd)
+            }
+        }
+    }
+
+    private fun convertData(d: KrollDict, it: Map.Entry<String, Any>) {
+        if ((it.value is Timestamp)) {
+            val ts: Timestamp = it.value as Timestamp
+            d[it.key] = ts.seconds
+        } else if (it.value is ArrayList<*>) {
+            val convertedList = mutableListOf<Any>()
+            for (item in it.value as ArrayList<*>) {
+                if (item is Map<*, *>) {
+                    val hashKd = KrollDict()
+                    for (childItem in item) {
+                        hashKd[childItem.key.toString()] = childItem.value.toString()
+                    }
+                    convertedList.add(hashKd)
+                } else {
+                    // Convert any ArrayList<*> elements to a JavaScript array
+                    convertedList.add(
+                        (item as? ArrayList<*>)?.toTypedArray() ?: item.toString()
+                    )
+                }
+            }
+            d[it.key] = convertedList.toTypedArray()
+        } else if (it.value.javaClass.toString() == "class com.google.firebase.firestore.DocumentReference") {
+            // skip
+        } else if (it.value.javaClass.toString() == "class java.util.HashMap") {
+            val hashKd = KrollDict()
+            try {
+                for (item in it.value as HashMap<*, *>) {
+                    // todo: value can be an array again
+                    hashKd[item.key.toString()] = item.value.toString()
+                }
+                d[it.key] = hashKd
+            } catch (ex: Exception) {
+                // skip
+            }
+        } else {
+            d[it.key] = it.value
+        }
+    }
+
+    @Kroll.method
+    fun getDocuments(params: KrollDict) {
+        val callback = params["callback"] as KrollFunction
+        val collection = params["collection"] as String
+        val document = TiConvert.toString(params["document"], "")
+        val subcollection = TiConvert.toString(params["subcollection"], "")
+
+        var fireCollection = Firebase.firestore.collection(collection)
+        if (subcollection != "" && document != "") {
+            fireCollection = Firebase.firestore.collection(collection).document(document)
+                .collection(subcollection)
+        }
+
+        if (TiConvert.toBoolean(params["addListeners"], false)) {
+            addListener(params)
+        }
+
+        fireCollection
+            .get()
+            .addOnSuccessListener { it ->
+
+                val list = mutableListOf<Map<String, Any>>()
+                for (documentRef in it.documents) {
+                    val d = KrollDict()
+
+                    documentRef.data!!.toMap().forEach {
+                        convertData(d, it)
+                    }
+                    d["_id"] = documentRef.id
+                    list.add(d)
+                }
+
+                val event = KrollDict()
+                event["success"] = true
+                event["documents"] = list.toTypedArray()
+
+                callback.callAsync(getKrollObject(), event)
+            }
+            .addOnFailureListener { error ->
+                val event = KrollDict()
+                event["success"] = false
+                event["error"] = error.localizedMessage
+
+                callback.callAsync(getKrollObject(), event)
+            }
+    }
+
+    @Kroll.method
+    fun getDocument(params: KrollDict): FirebaseDocumentProxy? {
+        //val callback = params["callback"] as KrollFunction
+        val collection = params["collection"] as String
+        val callback = params["callback"] as KrollFunction
+        val document = TiConvert.toString(params["document"], "")
+        if (document.isEmpty()) {
+            return null
+        }
+        val docRef = Firebase.firestore.collection(collection).document(document)
+
+        docRef.get().addOnSuccessListener { it ->
+                val event = KrollDict()
+                if (it?.data != null) {
+                    val d = KrollDict()
+
+                    // map entries
+                    it.data!!.toMap().forEach {
+                        convertData(d, it)
+                    }
+
+                    d["_id"] = it.id
+                    event["document"] = d
+                    event["success"] = true
+                    callback.callAsync(getKrollObject(), event)
+                }
+            }
+            .addOnFailureListener { error ->
+                val event = KrollDict()
+                event["success"] = false
+                event["error"] = error.localizedMessage
+
+                callback.callAsync(getKrollObject(), event)
+            }
+
+        return FirebaseDocumentProxy(docRef, document, collection)
+    }
+
+    @Kroll.method
+    fun updateDocument(params: KrollDict) {
+        val callback = params["callback"] as KrollFunction
+        val collection = params["collection"] as String
+        val data = params.getKrollDict("data")
+        val document = params["document"] as String
+        val subcollection = params["subcollection"] as String
+        val subdocument = params["subdocument"] as String
+
+        var fireCollection = Firebase.firestore.collection(collection)
+
+        if (subcollection.isNotEmpty()) {
+            fireCollection = fireCollection.document(subdocument).collection(subcollection)
+        }
+
+        fireCollection.document(document)
+            .update(data)
+            .addOnSuccessListener {
+                val event = KrollDict()
+                event["success"] = true
+
+                callback.callAsync(getKrollObject(), event)
+            }
+            .addOnFailureListener { error ->
+                val event = KrollDict()
+                event["success"] = false
+                event["error"] = error.localizedMessage
+
+                callback.callAsync(getKrollObject(), event)
+            }
+    }
+
+    @Kroll.method
+    fun deleteDocument(params: KrollDict) {
+        val callback = params["callback"] as KrollFunction
+        val collection = params["collection"] as String
+        val document = params["document"] as String
+        val subcollection = params["subcollection"] as String
+        val subDocument = params["subdocument"] as String
+
+        var fireCollection = Firebase.firestore.collection(collection).document(document)
+
+        if (subcollection != "" && subDocument != "") {
+            fireCollection = Firebase.firestore.collection(collection).document(subDocument)
+                .collection(subcollection).document(document)
+        }
+
+        fireCollection.delete()
+            .addOnSuccessListener {
+                val event = KrollDict()
+                event["success"] = true
+
+                callback.callAsync(getKrollObject(), event)
+            }
+            .addOnFailureListener { error ->
+                val event = KrollDict()
+                event["success"] = false
+                event["error"] = error.localizedMessage
+
+                callback.callAsync(getKrollObject(), event)
+            }
+    }
 }

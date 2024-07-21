@@ -10,6 +10,15 @@
 @interface FirebaseFirestoreModule : TiModule
 
 /**
+ Listens to a document changes. Initially (once) + each time the contents change, an update is fired.
+ 
+ - Parameter collection: The name of the collection.
+ - Parameter subcollection: The name of the sub-collection.
+ - Parameter document: The name of the document.
+ */
+- (void)addListener:(id)params;
+
+/**
  Adds a new document to the provided Firestore collection.
 
  - Parameter callback: The callback to be invoked if either the document was added or an error occurred.
@@ -40,6 +49,7 @@
  - Parameter document: The name of the document.
  */
 - (void)getSingleDocument:(id)params;
+- (void)getDocument:(id)params;
 
 /**
  Updates an extisting document from the provided Firestore collection.
