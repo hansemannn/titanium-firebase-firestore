@@ -4,8 +4,8 @@
  * Created by Hans Knöchel
  */
 
-#import "TiModule.h"
 #import "FirebaseFirestoreFieldValueProxy.h"
+#import "TiModule.h"
 
 @interface FirebaseFirestoreModule : TiModule
 
@@ -26,6 +26,12 @@
  - Parameter data: The data to save in the provided collection.
  */
 - (void)addDocument:(id)params;
+
+/**
+ Returns a list of documents saved in the provided Firestore collection. Different to `getDocuments`, you can also pass
+ filteres here.
+ */
+- (void)queryDocuments:(id)params;
 
 /**
  Returns a list of documents saved in the provided Firestore collection.
