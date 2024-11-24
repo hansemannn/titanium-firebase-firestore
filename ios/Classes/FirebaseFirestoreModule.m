@@ -211,8 +211,8 @@
   NSDictionary *data = params[@"data"]; // TODO: Parse "FIRFieldValue" proxy types
   NSString *document = params[@"document"];
 
-  [[[FIRFirestore.firestore collectionWithPath:collection] documentWithPath:document] updateData:data
-                                                                                      completion:^(NSError *_Nullable error) {
+  [[[FIRFirestore.firestore collectionWithPath:collection] documentWithPath:document] setData:data
+                                                                                      completion:^(NSError * _Nullable error) {
                                                                                         if (error != nil) {
                                                                                           [callback call:@[ @{@"success" : @(NO),
                                                                                             @"error" : error.localizedDescription} ]
