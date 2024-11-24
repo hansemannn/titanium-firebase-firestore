@@ -9,6 +9,8 @@
 
 package firebase.firestore
 
+import android.util.Log
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import org.appcelerator.kroll.KrollDict
@@ -20,7 +22,49 @@ import org.appcelerator.kroll.annotations.Kroll
 @Kroll.module(name = "TitaniumFirebaseFirestore", id = "firebase.firestore")
 class TitaniumFirebaseFirestoreModule: KrollModule() {
 
+	private fun convertToFirestoreMap(input: KrollDict): Map<String, Any?> {
+		val output = mutableMapOf<String, Any?>()
+		input.keys.forEach { key ->
+			val value = input[key]
+			when (value) {
+				is KrollDict -> output[key] = convertToFirestoreMap(value) // Substituir objetos aninhados
+				is Array<*> -> output[key] = value.toList() // Converter array para List
+				is List<*> -> output[key] = value // Já é uma lista compatível
+				else -> output[key] = value // Outros tipos são mantidos
+			}
+		}
+		return output
+	}
+
 	// Methods
+	@Kroll.method
+	fun addDocumentWithId(params: KrollDict) {
+		val callback = params["callback"] as KrollFunction
+		val collection = params["collection"] as String
+		val customDocumentId = params["id"] as String
+		val data = params.getKrollDict("data")
+
+		// Converte KrollDict para Map<String, Any?> compatível com Firestore
+		val firestoreData = convertToFirestoreMap(data)
+
+		Firebase.firestore.collection(collection)
+			.document(customDocumentId)
+			.set(firestoreData)
+			.addOnSuccessListener {
+				val event = KrollDict()
+				event["success"] = true
+				event["documentID"] = customDocumentId
+
+				callback.callAsync(getKrollObject(), event)
+			}
+			.addOnFailureListener { error ->
+				val event = KrollDict()
+				event["success"] = false
+				event["error"] = error.localizedMessage
+
+				callback.callAsync(getKrollObject(), event)
+			}
+	}
 
 	@Kroll.method
 	fun addDocument(params: KrollDict) {
@@ -28,8 +72,11 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 		val collection = params["collection"] as String
 		val data = params.getKrollDict("data")
 
+		// Converte KrollDict para Map<String, Any?> compatível com Firestore
+		val firestoreData = convertToFirestoreMap(data)
+
 		Firebase.firestore.collection(collection)
-			.add(data)
+			.add(firestoreData)
 			.addOnSuccessListener {
 				val event = KrollDict()
 				event["success"] = true
@@ -78,19 +125,48 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 	}
 
 	@Kroll.method
+	fun updateOneFieldInDocument(params: KrollDict) {
+		val callback = params["callback"] as KrollFunction
+		val collection = params["collection"] as String
+		val fieldName = params["field_name"] as String
+		val fieldValue = params["field_value"]
+		val document = params["document"] as String
+
+		Firebase.firestore.collection(collection)
+			.document(document)
+			.update(fieldName, fieldValue)
+			.addOnSuccessListener {
+				val event = KrollDict()
+				event["success"] = true
+				event["field"] = fieldName
+				event["value"] = fieldValue
+				callback.callAsync(getKrollObject(), event)
+			}
+			.addOnFailureListener { error ->
+				val event = KrollDict()
+				event["success"] = false
+				event["error"] = error.localizedMessage
+
+				callback.callAsync(getKrollObject(), event)
+			}
+	}
+
+	@Kroll.method
 	fun updateDocument(params: KrollDict) {
 		val callback = params["callback"] as KrollFunction
 		val collection = params["collection"] as String
 		val data = params.getKrollDict("data")
 		val document = params["document"] as String
 
+		// Converte KrollDict para Map<String, Any?> compatível com Firestore
+		val firestoreData = convertToFirestoreMap(data)
+
 		Firebase.firestore.collection(collection)
 			.document(document)
-			.update(data)
+			.set(firestoreData)
 			.addOnSuccessListener {
 				val event = KrollDict()
 				event["success"] = true
-
 				callback.callAsync(getKrollObject(), event)
 			}
 			.addOnFailureListener { error ->
