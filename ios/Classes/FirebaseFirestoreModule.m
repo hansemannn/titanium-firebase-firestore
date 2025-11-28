@@ -196,8 +196,16 @@
       return;
     }
 
+    // Verify if the document exists
+    if (!snapshot.exists) {
+      [callback call:@[ @{@"success" : @(NO),
+        @"error" : @"Document does not exist"} ]
+          thisObject:self];
+      return;
+    }
+
     [callback call:@[ @{@"success" : @(YES),
-      @"document" : [snapshot data]} ]
+      @"document" : NULL_IF_NIL([snapshot data])} ]
         thisObject:self];
   }];
 }
