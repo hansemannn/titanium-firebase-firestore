@@ -125,6 +125,37 @@ class TitaniumFirebaseFirestoreModule: KrollModule() {
 	}
 
 	@Kroll.method
+	fun getSingleDocument(params: KrollDict) {
+	    val callback = params["callback"] as KrollFunction
+	    val collection = params["collection"] as String
+	    val document = params["document"] as String
+
+	    Firebase.firestore.collection(collection)
+	        .document(document)
+	        .get()
+	        .addOnSuccessListener { documentSnapshot ->
+	            val event = KrollDict()
+	            if (documentSnapshot.exists()) {
+	                event["success"] = true
+	                val documentData = KrollDict(documentSnapshot.data)
+	                documentData["_id"] = documentSnapshot.id
+	                event["document"] = documentData
+	            } else {
+	                event["success"] = false
+	                event["error"] = "Document not found"
+	            }
+	            callback.callAsync(getKrollObject(), event)
+	        }
+	        .addOnFailureListener { error ->
+	            val event = KrollDict()
+	            event["success"] = false
+	            event["error"] = error.localizedMessage
+
+	            callback.callAsync(getKrollObject(), event)
+	        }
+	}
+
+	@Kroll.method
 	fun updateOneFieldInDocument(params: KrollDict) {
 		val callback = params["callback"] as KrollFunction
 		val collection = params["collection"] as String

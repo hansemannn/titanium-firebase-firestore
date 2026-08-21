@@ -6,6 +6,7 @@
 //
 
 #import "TiFirestoreUtils.h"
+#import <FirebaseCore/FIRTimestamp.h>
 #import <FirebaseFirestore/FirebaseFirestore.h>
 
 @implementation TiFirestoreUtils
