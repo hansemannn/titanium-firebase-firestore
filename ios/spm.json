@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    {
+      "remotePackageReference": "firebase-ios-sdk",
+      "repositoryURL": "https://github.com/firebase/firebase-ios-sdk",
+      "requirementKind": "upToNextMajorVersion",
+      "requirementMinimumVersion": "12.17.0",
+      "products": [
+        { "productName": "FirebaseFirestore", "frameworkName": "FirebaseFirestore", "linkage": "embedded" }
+      ]
+    }
+  ]
+}
