@@ -6,7 +6,7 @@
       "requirementKind": "upToNextMajorVersion",
       "requirementMinimumVersion": "12.17.0",
       "products": [
-        { "productName": "FirebaseFirestore", "frameworkName": "FirebaseFirestore", "linkage": "host" }
+        { "productName": "FirebaseFirestore", "frameworkName": "FirebaseFirestore", "linkage": "embedded" }
       ]
     }
   ]
